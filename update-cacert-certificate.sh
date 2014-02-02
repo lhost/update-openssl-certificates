@@ -42,8 +42,12 @@ subject=`openssl x509 -in "$TEMP" -noout -subject | awk -v FS='=' '{ sub("*.", "
 pem_file="$subject.pem"
 key_file="$subject.key"
 
+old_fingerprint=`openssl x509 -in "$pem_file" -noout -fingerprint | awk -v FS='=' '{ print $2 }'`
+old_serial=`openssl x509 -in "$pem_file" -noout -serial | awk -v FS='=' '{ print $2 }'`
+old_subject=`openssl x509 -in "$pem_file" -noout -subject | awk -v FS='=' '{ sub("*.", "", $3); print $3; }'`
+
 if [ ! -f "$pem_file" ] || [ ! -f "$key_file" ]; then
-	echo "Files '$pem_file' and '$key_file' doesn't exists ==> nothing to update";
+	echo "ERROR: Files '$pem_file' and '$key_file' doesn't exists ==> nothing to update";
 	exit 2
 fi
 
@@ -64,6 +68,21 @@ case $answer in
 		exit 5;
 esac
 
+# check if old cert is in subdir by serial
+if [ ! -L "$pem_file" ] || [ ! -L "$key_file" ]; then
+	echo "WARNING: Certificate should be moved to subdir"
+	old_dir="$old_subject-cacert-$old_serial"
+	mkdir "$old_dir"	|| exit 12
+	mv "$pem_file" "$key_file" "$old_dir" || exit 13
+	ln -s "$old_dir/$pem_file" || exit 14
+	ln -s "$old_dir/$key_file" || exit 15
+fi
+
+if [ "x$old_serial" = "x$serial" ]; then
+	echo "ERROR: OLD and NEW serial number of the key is the same"
+	exit 16
+fi
+
 outdir="$subject-cacert-$serial"
 mkdir "$outdir" || exit 6
 openssl x509 -in "$TEMP" -out "$outdir/$subject.pem" || exit 7
@@ -81,4 +100,6 @@ for certfile in "$subject.pem" "$subject.key"; do
 done
 
 rm -f "$TEMP"
+
+echo "DONE"
 
