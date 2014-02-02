@@ -15,3 +15,4 @@ Update process with this script is done this way:
 - DONE - your key is saved as /etc/nginx/ssl/example.com-cacert-B00B5/example.com.pem and symlink is created
 
 
+![alt Update SSL certificate with copy&paste method](http://blog.hostname.sk/wp-content/uploads/2014/02/cacert-certificate-update-1.png)
