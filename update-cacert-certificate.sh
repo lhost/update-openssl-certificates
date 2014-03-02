@@ -11,6 +11,13 @@
 # 2013-08-19 - created
 #
 
+AWK="gawk"
+
+if [ ! -x "`which $AWK`" ]; then
+	echo "gawk not found, please install gawk"
+	exit 1
+fi
+
 for cakey in class3.crt root.crt; do
 	echo "Checking 'cacert.org-$cakey'"
 	if [ ! -f "cacert.org-$cakey" ] || [ ! -s "cacert.org-$cakey" ]; then
@@ -35,16 +42,16 @@ echo "Your NEW certificate is"
 openssl x509 -in "$TEMP" -noout -subject -serial -fingerprint || exit 3
 echo -----------------------------
 
-fingerprint=`openssl x509 -in "$TEMP" -noout -fingerprint | awk -v FS='=' '{ print $2 }'`
-serial=`openssl x509 -in "$TEMP" -noout -serial | awk -v FS='=' '{ print $2 }'`
-subject=`openssl x509 -in "$TEMP" -noout -subject | awk -v FS='=' '{ sub("*.", "", $3); print $3; }'`
+fingerprint=`openssl x509 -in "$TEMP" -noout -fingerprint | $AWK -v FS='=' '{ print $2 }'`
+serial=`openssl x509 -in "$TEMP" -noout -serial | $AWK -v FS='=' '{ print $2 }'`
+subject=`openssl x509 -in "$TEMP" -noout -subject | $AWK -v FS='=' '{ sub("*.", "", $3); print $3; }'`
 
 pem_file="$subject.pem"
 key_file="$subject.key"
 
-old_fingerprint=`openssl x509 -in "$pem_file" -noout -fingerprint | awk -v FS='=' '{ print $2 }'`
-old_serial=`openssl x509 -in "$pem_file" -noout -serial | awk -v FS='=' '{ print $2 }'`
-old_subject=`openssl x509 -in "$pem_file" -noout -subject | awk -v FS='=' '{ sub("*.", "", $3); print $3; }'`
+old_fingerprint=`openssl x509 -in "$pem_file" -noout -fingerprint | $AWK -v FS='=' '{ print $2 }'`
+old_serial=`openssl x509 -in "$pem_file" -noout -serial | $AWK -v FS='=' '{ print $2 }'`
+old_subject=`openssl x509 -in "$pem_file" -noout -subject | $AWK -v FS='=' '{ sub("*.", "", $3); print $3; }'`
 
 if [ ! -f "$pem_file" ] || [ ! -f "$key_file" ]; then
 	echo "ERROR: Files '$pem_file' and '$key_file' doesn't exists ==> nothing to update";
