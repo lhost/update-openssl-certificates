@@ -98,21 +98,22 @@ serial=`openssl x509 -in "${NEW_SSL_CERTIFICATE}.pem" -noout -serial | $AWK -v F
 #
 # create directory with serial number and move all stuff there
 #
-dir="$FQDN-$serial"
+fqdn=`echo "$FQDN" | sed 's/*\.//g'`
+dir="$fqdn-$serial"
 mkdir $dir || exit 6
 mv $TMPFILE $dir/openssl.cnf
-mv ${NEW_SSL_CERTIFICATE}.pem $dir/${FQDN}.pem
-mv ${NEW_SSL_CERTIFICATE}.key $dir/${FQDN}.key
+mv ${NEW_SSL_CERTIFICATE}.pem $dir/${fqdn}.pem
+mv ${NEW_SSL_CERTIFICATE}.key $dir/${fqdn}.key
 
 #
 # Generate CSR
 #
 cd $dir
-openssl req -config ./openssl.cnf -new -subj $subject -key ${FQDN}.key -out ${FQDN}.csr || exit 7
+openssl req -config ./openssl.cnf -new -subj $subject -key ${fqdn}.key -out ${fqdn}.csr || exit 7
 echo "Here is your key: $dir/"
 ls -la .
 echo "#" ; echo "# Submit this request to your CA" ; echo "#"; echo
-cat ${FQDN}.csr
+cat ${fqdn}.csr
 
 # vim: fdm=marker fdl=0 fdc=3
 
