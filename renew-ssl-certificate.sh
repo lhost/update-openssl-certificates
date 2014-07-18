@@ -36,6 +36,9 @@ FQDN=`whiptail \
 	--inputbox "Please enter the host name to use in the SSL certificate.  It will become the 'commonName' field of the generated SSL certificate.  Host name:" 12 76 "$FQDN" \
 3>&1 1>&2 2>&3 `
 
+# remove asteriks from wildcard commonName
+fqdn=`echo "$FQDN" | sed 's/*\.//g'`
+
 TMPFILE="$(mktemp)" || exit 1
 TMPOUT="$(mktemp)"  || exit 1
 
@@ -63,8 +66,8 @@ CN = \$FQDN
 subjectAltName = @alt_names
 
 [alt_names]
-DNS.1	= *.$FQDN
-DNS.2	= $FQDN
+DNS.1	= *.$fqdn
+DNS.2	= $fqdn
 EOF
 # }}}
 
@@ -98,7 +101,6 @@ serial=`openssl x509 -in "${NEW_SSL_CERTIFICATE}.pem" -noout -serial | $AWK -v F
 #
 # create directory with serial number and move all stuff there
 #
-fqdn=`echo "$FQDN" | sed 's/*\.//g'`
 dir="$fqdn-$serial"
 mkdir $dir || exit 6
 mv $TMPFILE $dir/openssl.cnf
