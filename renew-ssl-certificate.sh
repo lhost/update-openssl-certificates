@@ -41,9 +41,6 @@ TMPOUT="$(mktemp)"  || exit 1
 
 trap "rm -f $TMPFILE $TMPOUT" EXIT
 
-echo TMPFILE=$TMPFILE
-echo TMPOUT=$TMPOUT
-
 # prepare openssl.cnf config {{{
 cat >> $TMPFILE <<EOF
 FQDN = $FQDN
