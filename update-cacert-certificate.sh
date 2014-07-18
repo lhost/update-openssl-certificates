@@ -44,14 +44,14 @@ echo -----------------------------
 
 fingerprint=`openssl x509 -in "$TEMP" -noout -fingerprint | $AWK -v FS='=' '{ print $2 }'`
 serial=`openssl x509 -in "$TEMP" -noout -serial | $AWK -v FS='=' '{ print $2 }'`
-subject=`openssl x509 -in "$TEMP" -noout -subject | $AWK -v FS='=' '{ sub("*.", "", $3); print $3; }'`
+subject=`openssl x509 -in "$TEMP" -noout -subject | $AWK -v FS='=' -v RS='/' '($1 == "CN") { sub("*.", "", $2); print $2 }'` # extract CommonName
 
 pem_file="$subject.pem"
 key_file="$subject.key"
 
 old_fingerprint=`openssl x509 -in "$pem_file" -noout -fingerprint | $AWK -v FS='=' '{ print $2 }'`
 old_serial=`openssl x509 -in "$pem_file" -noout -serial | $AWK -v FS='=' '{ print $2 }'`
-old_subject=`openssl x509 -in "$pem_file" -noout -subject | $AWK -v FS='=' '{ sub("*.", "", $3); print $3; }'`
+old_subject=`openssl x509 -in "$pem_file" -noout -subject | $AWK -v FS='=' '{ sub("*.", "", $3); print $NF; }'`
 
 if [ ! -f "$pem_file" ] || [ ! -f "$key_file" ]; then
 	echo "ERROR: Files '$pem_file' and '$key_file' doesn't exists ==> nothing to update";
@@ -78,6 +78,7 @@ esac
 # check if old cert is in subdir by serial
 if [ ! -L "$pem_file" ] || [ ! -L "$key_file" ]; then
 	echo "WARNING: Certificate should be moved to subdir"
+	#echo old_subject=$old_subject old_serial=$old_serial
 	old_dir="$old_subject-cacert-$old_serial"
 	mkdir "$old_dir"	|| exit 12
 	mv "$pem_file" "$key_file" "$old_dir" || exit 13
