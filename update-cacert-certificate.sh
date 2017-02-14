@@ -44,7 +44,7 @@ echo -----------------------------
 
 fingerprint=`openssl x509 -in "$TEMP" -noout -fingerprint | $AWK -v FS='=' '{ print $2 }'`
 serial=`openssl x509 -in "$TEMP" -noout -serial | $AWK -v FS='=' '{ print $2 }'`
-subject=`openssl x509 -in "$TEMP" -noout -subject | $AWK -v FS='=' -v RS='/' '($1 == "CN") { sub("*.", "", $2); print $2 }'` # extract CommonName
+subject=`openssl x509 -in "$TEMP" -noout -subject | $AWK '/^subject=CN/ { sub("*.", "", $3); print $3 }'` # extract CommonName
 
 pem_file="$subject.pem"
 key_file="$subject.key"
